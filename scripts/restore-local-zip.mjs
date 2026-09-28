@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { open } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 
 const base = 'https://xiaohongshu-demo-86151.abloom-root-8763.chatgpt.site/downloads/';
 const expectedHash = '6546170e1677262eed3b528cdee68af6a7cc1657e328cd0f84c8a21137c9d5ee';
@@ -38,15 +38,12 @@ async function worker() {
 }
 await Promise.all(Array.from({ length: 4 }, () => worker()));
 const destination = 'xiaohongshu-local-preview.zip';
-const file = await open(destination, 'w');
-try {
-  for (const bytes of buffers) await file.write(bytes);
-} finally {
-  await file.close();
-}
 const assembled = Buffer.concat(buffers);
 const actualHash = createHash('sha256').update(assembled).digest('hex');
 if (assembled.length !== expectedBytes || actualHash !== expectedHash) {
   throw new Error('Assembled ZIP differs from the desktop local preview');
 }
+await writeFile(destination, assembled);
+const uploadedHash = createHash('sha256').update(await readFile(destination)).digest('hex');
+if (uploadedHash !== expectedHash) throw new Error('Written ZIP hash mismatch');
 console.log('Exact local ZIP verified: ' + actualHash + ' (' + assembled.length + ' bytes)');
