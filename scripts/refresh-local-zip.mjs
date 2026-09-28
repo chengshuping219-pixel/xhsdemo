@@ -1,45 +1,17 @@
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 
-const base = 'https://xiaohongshu-demo-86151.abloom-root-8763.chatgpt.site/downloads/';
-const expectedHash = '4ee7f97bed06a8e57e64cd26af3ac08a73f2c5ffbce0273693fe9d388da04063';
-const expectedBytes = 54925952;
-const manifestResponse = await fetch(base + 'local-preview-manifest.json', { signal: AbortSignal.timeout(120000) });
-if (!manifestResponse.ok) throw new Error('Manifest HTTP ' + manifestResponse.status);
-const manifest = await manifestResponse.json();
-if (manifest.sha256 !== expectedHash || manifest.bytes !== expectedBytes || manifest.parts.length !== 14) throw new Error('Unexpected local ZIP manifest');
-const buffers = new Array(manifest.parts.length);
-let next = 0;
-async function worker() {
-  while (next < manifest.parts.length) {
-    const index = next++;
-    const part = manifest.parts[index];
-    let lastError;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        const response = await fetch(base + encodeURIComponent(part.name), { signal: AbortSignal.timeout(180000) });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const bytes = Buffer.from(await response.arrayBuffer());
-        const hash = createHash('sha256').update(bytes).digest('hex');
-        if (bytes.length !== part.bytes || hash !== part.sha256) throw new Error('Part hash or size mismatch');
-        buffers[index] = bytes;
-        console.log('Verified ' + part.name);
-        lastError = null;
-        break;
-      } catch (error) {
-        lastError = error;
-        if (attempt < 3) await new Promise(resolve => setTimeout(resolve, attempt * 3000));
-      }
-    }
-    if (lastError) throw new Error(part.name + ': ' + lastError.message);
-  }
+const old = await readFile('previous/xiaohongshu-local-preview.zip');
+const oldHash = createHash('sha256').update(old).digest('hex');
+if (old.length !== 54925952 || oldHash !== '4ee7f97bed06a8e57e64cd26af3ac08a73f2c5ffbce0273693fe9d388da04063') {
+  throw new Error('Previous release is not the verified local ZIP');
 }
-await Promise.all(Array.from({ length: 4 }, () => worker()));
-const assembled = Buffer.concat(buffers);
-const actualHash = createHash('sha256').update(assembled).digest('hex');
-if (assembled.length !== expectedBytes || actualHash !== expectedHash) throw new Error('Assembled ZIP differs from the desktop local preview');
-const destination = 'xiaohongshu-local-preview.zip';
-await writeFile(destination, assembled);
-const writtenHash = createHash('sha256').update(await readFile(destination)).digest('hex');
-if (writtenHash !== expectedHash) throw new Error('Written ZIP hash mismatch');
-console.log('Exact local ZIP verified: ' + actualHash + ' (' + assembled.length + ' bytes)');
+const tail = Buffer.from((await readFile('patches/corner-fix-tail.b64', 'utf8')).trim(), 'base64');
+if (tail.length !== 13824) throw new Error('Unexpected local patch length');
+const updated = Buffer.concat([old.subarray(0, 54912129), tail]);
+const hash = createHash('sha256').update(updated).digest('hex');
+if (updated.length !== 54925953 || hash !== '9db9e69a383ecb75b9162fed22766e8fa4c2a152a3b9fc4c0e2429e01a6ef0a3') {
+  throw new Error('Patched ZIP differs from the local desktop ZIP');
+}
+await writeFile('xiaohongshu-local-preview.zip', updated);
+console.log('Exact local ZIP verified: ' + hash);

@@ -6,6 +6,8 @@ on:
     paths:
       - 'scripts/refresh-local-zip.mjs'
       - '.github/workflows/refresh-local-zip.yml'
+      - 'patches/corner-fix-tail.b64'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -16,9 +18,17 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Restore and verify fixed local ZIP
+      - name: Download previous verified local ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: chengshuping219-pixel/xhsdemo
+        run: |
+          mkdir -p previous
+          gh release download local-preview-2026-09-29 \
+            --pattern xiaohongshu-local-preview.zip --dir previous
+      - name: Apply exact local ZIP correction and verify SHA-256
         run: node scripts/refresh-local-zip.mjs
-      - name: Replace release asset with fixed ZIP
+      - name: Replace release asset with corrected local ZIP
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: chengshuping219-pixel/xhsdemo
