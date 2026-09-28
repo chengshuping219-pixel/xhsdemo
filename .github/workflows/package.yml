@@ -1,0 +1,35 @@
+name: Package HTML demo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'package-manifest.json'
+      - 'scripts/package.mjs'
+      - '.github/workflows/package.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and verify all demo files
+        run: node scripts/package.mjs
+      - name: Build deployable ZIP
+        run: |
+          cd package
+          zip -q -r ../小红书demo.zip .
+          cd ..
+          unzip -Z -1 小红书demo.zip | grep -Fx 'index.html'
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create demo-2026-09-29 "小红书demo.zip" \
+            --title "小红书demo（2026-09-29）" \
+            --notes "可直接用于静态 HTML 部署。解压后 index.html 位于根目录；包含图片、视频和拼音词库。"
