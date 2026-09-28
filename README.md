@@ -1,7 +1,10 @@
 # 小红书 demo
 
-[下载可部署的 ZIP 压缩包](https://github.com/chengshuping219-pixel/xhsdemo/releases/download/demo-2026-09-29/demo.zip)
+**[下载本地预览原始压缩包](https://github.com/chengshuping219-pixel/xhsdemo/releases/download/local-preview-2026-09-29/xiaohongshu-local-preview.zip)**
 
-解压后将里面的全部文件上传到静态网站空间。`index.html` 位于压缩包根目录，图片、视频和拼音词库均已包含。
+这份 ZIP 直接来自本地预览重新打包的文件，包含 112 个文件。解压后 `index.html` 在根目录，将解压出的全部文件一起上传到静态网站空间即可。
 
-压缩包由 [GitHub Actions](https://github.com/chengshuping219-pixel/xhsdemo/actions/workflows/package.yml) 自动生成，打包前会逐个校验 112 个文件的 SHA-256。
+- 文件大小：54,925,951 字节
+- SHA-256：`6546170e1677262eed3b528cdee68af6a7cc1657e328cd0f84c8a21137c9d5ee`
+
+[查看 GitHub Release](https://github.com/chengshuping219-pixel/xhsdemo/releases/tag/local-preview-2026-09-29)。
