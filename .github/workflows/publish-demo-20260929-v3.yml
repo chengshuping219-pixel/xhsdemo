@@ -1,0 +1,21 @@
+name: Publish current local preview ZIP
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-demo-20260929-v3.yml'
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download verified public preview ZIP
+        run: |
+          curl --fail --location --retry 3 --retry-delay 2 'https://xiaohongshu-demo-86151.abloom-root-8763.chatgpt.site/xiaohongshu-local-preview.zip?v=20260929-editor-v8' --output xiaohongshu-local-preview.zip
+          printf '%s  %s\n' '01ee7ef4b9554f4368e4289bf1632718219ba05db9c5adea61fa68de4512693f' 'xiaohongshu-local-preview.zip' | sha256sum --check
+          unzip -tqq xiaohongshu-local-preview.zip
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create local-preview-2026-09-29-v3 xiaohongshu-local-preview.zip --repo '${{ github.repository }}' --title '小红书 demo 本地预览（流畅切换和编辑修复版）' --notes '53 个静态文件。修复识别重试、全部/买同款切换中的旧图与空白过渡，以及写长文输入重影和写想法键盘入口。解压后上传全部文件到静态网站空间即可。'
