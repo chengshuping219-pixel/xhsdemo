@@ -1,6 +1,6 @@
 # 小红书 demo
 
-**[下载最新版地预览压缩包](https://github.com/chengshuping219-pixel/xhsdemo/releases/download/local-preview-2026-09-29-v3/xiaohongshu-local-preview.zip)**
+**[下载最新本地预览压缩包](https://github.com/chengshuping219-pixel/xhsdemo/releases/download/local-preview-2026-09-29-v3/xiaohongshu-local-preview.zip)**
 
 这份 ZIP 与[公开预览](https://xiaohongshu-demo-86151.abloom-root-8763.chatgpt.site)为同一版本，包含 53 个静态文件。解压后将全部文件上传到静态网站空间即可，`index.html` 位于根目录。
 
