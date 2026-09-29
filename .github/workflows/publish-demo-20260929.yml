@@ -1,0 +1,21 @@
+name: Publish current local preview ZIP
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-demo-20260929.yml'
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download verified public preview ZIP
+        run: |
+          curl --fail --location --retry 3 --retry-delay 2 'https://xiaohongshu-demo-86151.abloom-root-8763.chatgpt.site/xiaohongshu-local-preview.zip?v=20260929-public-crop-v4' --output xiaohongshu-local-preview.zip
+          printf '%s  %s\n' '29a48316bd06af47efcfb613c141c6408a4bad764906a5eec6ff980707614ac5' 'xiaohongshu-local-preview.zip' | sha256sum --check
+          unzip -tqq xiaohongshu-local-preview.zip
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create local-preview-2026-09-29-v2 xiaohongshu-local-preview.zip --repo '${{ github.repository }}' --title '小红书 demo 本地预览（压缩版）' --notes '53 个静态文件。修复全部/买同款双层显示和顶端对齐，替换新版结果图、点赞与收藏图，并压缩页面资源。解压后上传全部文件到静态网站空间即可。'
